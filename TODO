@@ -1,0 +1,6 @@
+Docker volume for logs
+Docker volume for redis
+compose file
+middleware for request logging
+dashboard for tasks (queued and scheduled)
+
