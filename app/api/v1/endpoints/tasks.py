@@ -99,7 +99,7 @@ async def enqueue_task(
     func = get_func_from_action(action)
     now = datetime.now()
     job = workers.enqueue_at(now, func, *action.args, **action.kwargs)
-    return Task(id=job.id, action=action, schedule=ScheduleAt())
+    return get_task_from_job(job)
 
 
 @router.post("/enqueue/at", response_model=Task)
@@ -108,14 +108,14 @@ async def enqueue_task_at(action: Action = Depends(), schedule: ScheduleAt = Dep
     job = workers.enqueue_at(
         schedule.scheduled_time, func, *action.args, **action.kwargs
     )
-    return Task(id=job.id, action=action, schedule=ScheduleAt())
+    return get_task_from_job(job)
 
 
 @router.post("/enqueue/in", response_model=Task)
 async def enqueue_task_in(action: Action = Depends(), schedule: ScheduleIn = Depends()):
     func = get_func_from_action(action)
     job = workers.enqueue_in(schedule.time_delta, func, *action.args, **action.kwargs)
-    return Task(id=job.id, action=action, schedule=ScheduleAt())
+    return get_task_from_job(job)
 
 
 @router.post("/enqueue/periodic", response_model=Task)
@@ -131,7 +131,7 @@ async def enqueue_task_periodic(
         *action.args,
         **action.kwargs,
     )
-    return Task(id=job.id, action=action, schedule=ScheduleAt())
+    return get_task_from_job(job)
 
 
 # @router.patch("/update/id/{task_id}", response_model=Task)

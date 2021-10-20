@@ -86,14 +86,9 @@ def get_function_definition(func: Callable) -> FunctionDefinition:
     return function_definition
 
 
-def get_module_definition(module_filepath: Path) -> ModuleDefinition:
+def get_module_definition(module: ModuleType) -> ModuleDefinition:
     global _callable_map
 
-    module_definition = None
-    if not is_valid_module(module_filepath):
-        return module_definition
-
-    module = import_module(module_filepath)
     module_name = module.__name__.removeprefix(f"{MODULES_PATH}.")
     funcs = inspect.getmembers(module, inspect.isfunction)
     _callable_map[module_name] = {}
@@ -119,7 +114,11 @@ def register_modules(module_definitions: List[ModuleDefinition] = []):
 
     module_filepaths = sorted(config.MODULES_DIR.rglob("*.py"))
     for module_filepath in module_filepaths:
-        module_definition = get_module_definition(module_filepath)
+        if not is_valid_module(module_filepath):
+            continue
+
+        module = import_module(module_filepath)
+        module_definition = get_module_definition(module)
 
         if module_definition:
             module_definitions.append(module_definition)
