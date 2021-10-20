@@ -5,6 +5,7 @@ from pydantic import UUID4, BaseModel
 
 
 class Action(BaseModel):
+    module: str = ""
     function: str = ""
     args: List[Any] = []
     kwargs: Dict[str, Any] = {}

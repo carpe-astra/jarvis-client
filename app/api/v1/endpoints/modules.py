@@ -19,7 +19,8 @@ def get_module_definition(module_name: str):
         module_definition = next(
             (
                 module_definition
-                for module_definition in modules_util.module_definitions_list
+                for module_definition in modules_util.module_definitions
+                if module_definition.module == module_name
             )
         )
     except StopIteration:
@@ -33,14 +34,14 @@ def get_module_definition(module_name: str):
 # ================================================================
 @router.get("/", response_model=List[ModuleDefinition])
 async def get_module_definitions():
-    return modules_util.module_definitions_list
+    return modules_util.module_definitions
 
 
 @router.get("/names", response_model=List[str])
 async def get_module_names():
     return [
-        module_definitions.module
-        for module_definitions in modules_util.module_definitions_list
+        module_definition.module
+        for module_definition in modules_util.module_definitions
     ]
 
 

@@ -20,10 +20,12 @@ async def _turn_off():
 
 
 def turn_on():
+    """Turns the bed heater on."""
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_turn_on())
 
 
 def turn_off():
+    """Turns the bed heater off."""
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_turn_off())

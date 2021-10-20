@@ -9,7 +9,12 @@ from fastapi.param_functions import Depends
 from app import workers
 from app.core._logging import logger
 from app.models.tasks import Action, ScheduleAt, ScheduleIn, SchedulePeriodic, Task
-from app.modules_util import MODULES_PATH, get_function_callable
+from app.modules_util import (
+    MODULES_PATH,
+    InvalidFunctionError,
+    InvalidModuleError,
+    get_function_callable,
+)
 
 router = APIRouter()
 
@@ -27,11 +32,18 @@ def get_job_by_id(task_id: str):
 
 def get_func_from_action(action: Action):
     try:
-        func = get_function_callable(action.function)
-    except:
+        func = get_function_callable(action.module, action.function)
+
+    except InvalidModuleError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Module not found."
+        )
+
+    except InvalidFunctionError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Function not found."
         )
+
     return func
 
 
