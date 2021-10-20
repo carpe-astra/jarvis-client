@@ -7,13 +7,12 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
     poetry config virtualenvs.create false
 
 # Copy using poetry.lock* in case it doesn't exist yet
-WORKDIR /code/workers
-COPY ./workers/pyproject.toml ./workers/poetry.lock* /code/workers/
+WORKDIR /code/dashboard
+COPY ./dashboard/pyproject.toml ./dashboard/poetry.lock* /code/dashboard/
 
 RUN poetry install --no-root --no-dev
 
-COPY ./workers /code/workers
-COPY ./app /code/app
+COPY ./dashboard /code/dashboard
 WORKDIR /code
 
-CMD ["rq", "worker"]
+CMD ["rq-scheduler-dashboard"]

@@ -1,25 +1,26 @@
 version: "3.9"
 
 services:
-  container_name: "redis"
   redis:
     image: "redis:alpine"
-    container_name: "redis"
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
       - ./redis:/data
 
   workers:
-    container_name: "workers"
+    container_name: workers
     build:
       context: .
       dockerfile: ./dockerfiles/workers.dockerfile
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
     depends_on:
       - redis
 
   scheduler:
-    container_name: "scheduler"
+    container_name: scheduler
     build:
       context: .
       dockerfile: ./dockerfiles/scheduler.dockerfile
@@ -31,8 +32,22 @@ services:
       - redis
       - workers
 
+  dashboard:
+    container_name: dashboard
+    build:
+      context: .
+      dockerfile: ./dockerfiles/dashboard.dockerfile
+    ports:
+      - "9181:9181"
+    environment:
+      RQ_SCHEDULER_DASHBOARD_REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      - redis
+      - workers
+      - scheduler
+
   app:
-    container_name: "jarvis-client"
+    container_name: jarvis-client
     build:
       context: .
       dockerfile: ./dockerfiles/client.dockerfile
@@ -49,5 +64,3 @@ services:
       - scheduler
 
   # listener:
-
-  # dashboard:
