@@ -9,12 +9,14 @@ from typing import Callable
 
 from app import config
 from app.core._logging import logger
+from app.models.modules import ModuleDefinition
 
 # Globals
 # ================================================================
 MODULES_PATH = f"{config.APP_DIR_NAME}.{config.MODULES_DIR_NAME}"
 INVALID_PREFIXES = ("_", "__")
 _func_map = {}
+module_definitions_list = []
 
 
 # Helper Functions
@@ -41,8 +43,10 @@ def get_function_callable(function_name: str) -> Callable:
 def register_functions():
     logger.info("Registering functions")
     global _func_map
+    global module_definitions_list
 
-    for module_filepath in config.MODULES_DIR.rglob("*.py"):
+    module_filepaths = sorted(config.MODULES_DIR.rglob("*.py"))
+    for module_filepath in module_filepaths:
         if not is_valid_module(module_filepath):
             continue
 
@@ -57,10 +61,17 @@ def register_functions():
         module_name = module.__name__.removeprefix(f"{MODULES_PATH}.")
 
         funcs = inspect.getmembers(module, inspect.isfunction)
+        module_definitions = []
         for name, func in funcs:
             if not is_valid_function(func):
                 continue
             _func_map[f"{module_name}.{func.__name__}"] = func
+            module_definitions.append(func.__name__)
+
+        if module_definitions:
+            module_definitions_list.append(
+                ModuleDefinition(module=module_name, functions=module_definitions)
+            )
 
 
 # Execute on import

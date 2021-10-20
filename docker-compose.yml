@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  container_name: "redis"
   redis:
     image: "redis:alpine"
     container_name: "redis"
@@ -9,22 +10,44 @@ services:
     volumes:
       - ./redis:/data
 
-  # workers:
-
-  app:
+  workers:
+    container_name: "workers"
     build:
       context: .
-      dockerfile: Dockerfiles/server.dockerfile
+      dockerfile: ./dockerfiles/workers.dockerfile
+    depends_on:
+      - redis
+
+  scheduler:
+    container_name: "scheduler"
+    build:
+      context: .
+      dockerfile: ./dockerfiles/scheduler.dockerfile
+    environment:
+      RQ_REDIS_INTERVAL: 1
+      RQ_REDIS_HOST: "redis"
+      RQ_REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - workers
+
+  app:
     container_name: "jarvis-client"
+    build:
+      context: .
+      dockerfile: ./dockerfiles/client.dockerfile
     ports:
       - "8000:8000"
     environment:
       FASTAPI_ENV: production
       LOG_LEVEL: INFO
-      REDIS_HOST: 127.0.0.1
-      REDIS_PORT: 6370
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
     depends_on:
       - redis
       - workers
+      - scheduler
+
+  # listener:
 
   # dashboard:

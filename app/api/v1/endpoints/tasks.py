@@ -9,7 +9,7 @@ from fastapi.param_functions import Depends
 from app import workers
 from app.core._logging import logger
 from app.models.tasks import Action, ScheduleAt, ScheduleIn, SchedulePeriodic, Task
-from app.modules_util import get_function_callable, MODULES_PATH
+from app.modules_util import MODULES_PATH, get_function_callable
 
 router = APIRouter()
 
@@ -36,15 +36,26 @@ def get_func_from_action(action: Action):
 
 
 def get_task_from_job(job: workers.Job):
-    # if job in workers.scheduler:
-    #     if job.meta.get("interval", None):
-    #         schedule = SchedulePeriodic(
-    #             scheduled_time=,
-    #             interval = job.meta.get("interval"),
-    #             repeat = job.meta.get("repeat")
-    #         )
-    #     schedule = ScheduleAt()
-    schedule = ScheduleAt()
+    scheduled_jobs = workers.scheduler.get_jobs(with_times=True)
+
+    if job in workers.scheduler:
+        for _job, _time in scheduled_jobs:
+            if _job == job:
+                scheduled_time = _time
+                break
+
+        if job.meta.get("interval", None):
+            schedule = SchedulePeriodic(
+                scheduled_time=scheduled_time,
+                interval=job.meta.get("interval"),
+                repeat=job.meta.get("repeat"),
+            )
+
+        else:
+            schedule = ScheduleAt(scheduled_time=scheduled_time)
+    else:
+        schedule = ScheduleAt(scheduled_time=job.enqueued_at)
+
     return Task(
         id=job.id,
         action=Action(
@@ -106,7 +117,7 @@ async def enqueue_task_periodic(
         schedule.repeat,
         func,
         *action.args,
-        **action.kwargs
+        **action.kwargs,
     )
     return Task(id=job.id, action=action, schedule=ScheduleAt())
 
