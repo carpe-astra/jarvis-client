@@ -1,10 +1,8 @@
 """Module for enqueueing tasks to be scheduled and performed in the background"""
 
-import inspect
 from datetime import datetime, timedelta
 from typing import Callable
 
-from redis import Redis
 from rq import Queue
 from rq.exceptions import NoSuchJobError
 from rq.job import Job, JobStatus
@@ -12,6 +10,7 @@ from rq_scheduler import Scheduler
 
 from app.config import settings
 from app.core._logging import logger
+from redis import Redis
 
 # Globals
 # ================================================================

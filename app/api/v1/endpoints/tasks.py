@@ -10,7 +10,6 @@ from app import workers
 from app.core._logging import logger
 from app.models.tasks import Action, ScheduleAt, ScheduleIn, SchedulePeriodic, Task
 from app.modules_util import (
-    MODULES_PATH,
     InvalidFunctionError,
     InvalidModuleError,
     get_function_callable,
@@ -68,10 +67,15 @@ def get_task_from_job(job: workers.Job):
     else:
         schedule = ScheduleAt(scheduled_time=job.enqueued_at)
 
+    func_name_parts = job.func_name.split(".")
+    module_name = ".".join(func_name_parts[2:-1])
+    func_name = func_name_parts[-1]
+
     return Task(
         id=job.id,
         action=Action(
-            function=job.func_name.removeprefix(f"{MODULES_PATH}."),
+            module=module_name,
+            function=func_name,
             args=job.args,
             kwargs=job.kwargs,
         ),

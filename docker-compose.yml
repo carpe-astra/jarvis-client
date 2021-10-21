@@ -9,11 +9,29 @@ services:
     volumes:
       - ./redis:/data
 
-  workers:
-    container_name: workers
+  app:
+    container_name: jarvis-client
+    image: jarvis-client:latest
     build:
       context: .
-      dockerfile: ./dockerfiles/workers.dockerfile
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 7410
+    ports:
+      - "7410:7410"
+    environment:
+      FASTAPI_ENV: production
+      LOG_LEVEL: INFO
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      DASHBOARD_PORT: 9181
+    depends_on:
+      - redis
+      - workers
+      - scheduler
+
+  workers:
+    image: jarvis-client:latest
+    command: rq worker
     environment:
       REDIS_URL: "redis://redis:6379/0"
     depends_on:
@@ -21,11 +39,9 @@ services:
 
   scheduler:
     container_name: scheduler
-    build:
-      context: .
-      dockerfile: ./dockerfiles/scheduler.dockerfile
+    image: jarvis-client:latest
+    command: rqscheduler -i 1
     environment:
-      RQ_REDIS_INTERVAL: 1
       RQ_REDIS_HOST: "redis"
       RQ_REDIS_PORT: 6379
     depends_on:
@@ -34,30 +50,12 @@ services:
 
   dashboard:
     container_name: dashboard
-    build:
-      context: .
-      dockerfile: ./dockerfiles/dashboard.dockerfile
+    image: jarvis-client:latest
+    command: rq-scheduler-dashboard
     ports:
       - "9181:9181"
     environment:
       RQ_SCHEDULER_DASHBOARD_REDIS_URL: "redis://redis:6379/0"
-    depends_on:
-      - redis
-      - workers
-      - scheduler
-
-  app:
-    container_name: jarvis-client
-    build:
-      context: .
-      dockerfile: ./dockerfiles/client.dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      FASTAPI_ENV: production
-      LOG_LEVEL: INFO
-      REDIS_HOST: "redis"
-      REDIS_PORT: 6379
     depends_on:
       - redis
       - workers

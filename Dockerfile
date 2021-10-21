@@ -14,5 +14,3 @@ RUN poetry install --no-root --no-dev
 
 COPY ./app /code/app
 WORKDIR /code
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

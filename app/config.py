@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     redis_host: str = "127.0.0.1"
     redis_port: int = 6379
 
+    dashboard_port: int = 9181
+
     class Config:
         env_file = ".env"
 

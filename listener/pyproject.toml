@@ -1,24 +1,18 @@
 [tool.poetry]
-name = "jarvis-client"
+name = "listener"
 version = "0.1.0"
-description = ""
+description = "Microphone listener for Jarvis client"
 authors = ["Taylor Young <y.taylor@rocketmail.com>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-loguru = "^0.5.3"
 pydantic = "^1.8.2"
-fastapi = "^0.70.0"
-uvicorn = "^0.15.0"
-rq = "^1.10.0"
-rq-scheduler = "^0.11.0"
-rq-scheduler-dashboard = "^0.0.2"
-python-kasa = "^0.4.0"
+loguru = "^0.5.3"
+websockets = "^10.0"
+PyAudio = "^0.2.11"
 
 [tool.poetry.dev-dependencies]
-black = "^21.9b0"
-isort = "^5.9.3"
-pylint = "^2.11.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
